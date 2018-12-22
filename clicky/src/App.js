@@ -1,103 +1,176 @@
 import React, { Component } from "react";
 import FriendCard from "./components/FriendCard";
-import Nav from "./components/Nav";
 import Wrapper from "./components/Wrapper";
 import Title from "./components/Title";
-import Container from "./Container";
-import Row from "./Row";
-import Column from "./Column";
-import friends from "./friends.json";
+import cards from "./cards.json";
 import "./App.css";
 
-function shuffleFriends(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-};
+let correctGuesses = 0;
+let bestScore = 0;
+let clickMessage = "Click on an image to earn points, but don't click on any of them more than once!";
 
 class App extends Component {
-  // Set this.state
+    
+    // Setting this.state.cards to the cards json array
+    state = {
+        cards,
+        correctGuesses,
+        bestScore,
+        clickMessage
+    };
+
+    isClicked = id => {
+
+        const cards = this.state.cards;
+
+        const clickedMatch = cards.filter(match => match.id === id);
+
+        // If the cardd image's clicked value is already true, 
+        // do the game over actions
+        if (clickedMatch[0].clicked){
+
+            correctGuesses = 0;
+            clickMessage = "Game over, try again!"
+
+            for (let i = 0 ; i < cards.length ; i++){
+                cards[i].clicked = false;
+            }
+
+            this.setState({clickMessage});
+            this.setState({correctGuesses});
+            this.setState({cards});
+
+        } else if (correctGuesses < 11) {
+
+            clickedMatch[0].clicked = true;
+            correctGuesses++;
+            
+            clickMessage = "Good job!";
+
+            if (correctGuesses > bestScore){
+                bestScore = correctGuesses;
+                this.setState({bestScore});
+            }
+
+            cards.sort(function(a, b){return 0.5 - Math.random()});
+
+            this.setState({cards});
+            this.setState({correctGuesses});
+            this.setState({clickMessage});
+        } else {
+
+            clickedMatch[0].clicked = true;
+
+            correctGuesses = 0;
+
+            clickMessage = "YOU WIN!";
+            bestScore = 12;
+            this.setState({bestScore});
+            
+            for (let i = 0 ; i < cards.length ; i++){
+                cards[i].clicked = false;
+            }
+
+            cards.sort(function(a, b){return 0.5 - Math.random()});
+
+            this.setState({ cards });
+            this.setState({correctGuesses});
+            this.setState({clickMessage});
+
+        }
+    };
+
+    render() {
+        return (
+          <Wrapper>
+          <Title score={this.state.score} highscore={this.state.highscore}>Cartoon Clicky Game</Title>
+          {this.state.cards.map(card => (
+            <FriendCard
+              isClicked={this.isClicked}
+              id={card.id}
+              key={card.id}
+              image={card.image}
+            />
+          ))}
+        </Wrapper>
+/*             <Wrapper>
+                <Title>Cartoon Clicky Game!</Title>
+        
+                <h3 className="scoreSummary">
+                    {this.state.clickMessage}
+                </h3>
+                
+                <h3 className="scoreSummary">
+                    Correct Guesses: {this.state.correctGuesses} 
+                    <br />
+                    Best Score: {this.state.bestScore} 
+                </h3>
+
+                {this.state.cards.map(match => (
+                    <Card
+                        isClicked={this.isClicked}
+                        id={match.id}
+                        key={match.id}
+                        image={match.image}
+                    />
+                ))}
+            </Wrapper> */
+        );
+    }
+}
+
+export default App;
+/* class App extends Component {
+  // Setting this.state.cards to the cards json array
   state = {
-    friends,
-    currentScore: 0,
-    topScore: 0,
-    rightWrong: "",
-    clicked: [],
+    cards,
+    score: 0,
+    highscore: 0
   };
 
-  handleClick = id => {
-    if (this.state.clicked.indexOf(id) === -1) {
-      this.handleIncrement();
-      this.setState({ clicked: this.state.clicked.concat(id) });
-    } else {
-      this.handleReset();
+  gameOver = () => {
+    if (this.state.score > this.state.highscore) {
+      this.setState({highscore: this.state.score}, function() {
+        console.log(this.state.highscore);
+      });
     }
-  };
-
-  handleIncrement = () => {
-    const newScore = this.state.currentScore + 1;
-    this.setState({
-      currentScore: newScore,
-      rightWrong: ""
+    this.state.cards.forEach(card => {
+      card.count = 0;
     });
-    if (newScore >= this.state.topScore) {
-      this.setState({ topScore: newScore });
-    }
-    else if (newScore === 12) {
-      this.setState({ rightWrong: "You win!" });
-    }
-    this.handleShuffle();
-  };
+    alert(`Game Over :( \nscore: ${this.state.score}`);
+    this.setState({score: 0});
+    return true;
+  }
 
-  handleReset = () => {
-    this.setState({
-      currentScore: 0,
-      topScore: this.state.topScore,
-      rightWrong: "Glaven!",
-      clicked: []
+  clickCount = id => {
+    this.state.cards.find((o, i) => {
+      if (o.id === id) {
+        if(cards[i].count === 0){
+          cards[i].count = cards[i].count + 1;
+          this.setState({score : this.state.score + 1}, function(){
+            console.log(this.state.score);
+          });
+          this.state.cards.sort(() => Math.random() - 0.5)
+          return true; 
+        } else {
+          this.gameOver();
+        }
+      }
     });
-    this.handleShuffle();
-  };
-
-  handleShuffle = () => {
-    let shuffledFriends = shuffleFriends(friends);
-    this.setState({ friends: shuffledFriends });
-  };
-
+  }
+  // Map over this.state.cards and render a cardCard component for each card object
   render() {
     return (
       <Wrapper>
-        <Nav
-          title="Simpsons Clicky Game"
-          score={this.state.currentScore}
-          topScore={this.state.topScore}
-          rightWrong={this.state.rightWrong}
-        />
-
-        <Title>
-          Try to click on each character, but don't hit any duplicates, or
-          we'll release the hounds!!!
-        </Title>
-
-        <Container>
-          <Row>
-            {this.state.friends.map(friend => (
-              <Column size="md-3 sm-6">
-                <FriendCard
-                  key={friend.id}
-                  handleClick={this.handleClick}
-                  handleIncrement={this.handleIncrement}
-                  handleReset={this.handleReset}
-                  handleShuffle={this.handleShuffle}
-                  id={friend.id}
-                  image={friend.image}
-                />
-              </Column>
-            ))}
-          </Row>
-        </Container>
+        <Title score={this.state.score} highscore={this.state.highscore}>Clicky Game</Title>
+        {this.state.cards.map(card => (
+          <Card
+            clickCount={this.clickCount}
+            id={card.id}
+            key={card.id}
+            image={card.image}
+          />
+        ))}
       </Wrapper>
     );
   }
@@ -105,32 +178,4 @@ class App extends Component {
 
 export default App;
 
-/* import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
-
-export default App;
  */
