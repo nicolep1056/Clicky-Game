@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import FriendCard from "./components/FriendCard";
 import Wrapper from "./components/Wrapper";
 import Title from "./components/Title";
-import cards from "./cards.json";
+import cards from "./friends.json";
 import "./App.css";
 
 let correctGuesses = 0;
@@ -82,7 +82,7 @@ class App extends Component {
 
     render() {
         return (
-          <Wrapper>
+/*           <Wrapper>
           <Title score={this.state.score} highscore={this.state.highscore}>Cartoon Clicky Game</Title>
           {this.state.cards.map(card => (
             <FriendCard
@@ -92,29 +92,33 @@ class App extends Component {
               image={card.image}
             />
           ))}
-        </Wrapper>
-/*             <Wrapper>
+        </Wrapper> */
+            <Wrapper>
                 <Title>Cartoon Clicky Game!</Title>
+
+                <br></br>
         
-                <h3 className="scoreSummary">
+                <h3 className="scoreTally">
                     {this.state.clickMessage}
                 </h3>
                 
-                <h3 className="scoreSummary">
+                <h3 className="scoreTally">
                     Correct Guesses: {this.state.correctGuesses} 
                     <br />
                     Best Score: {this.state.bestScore} 
                 </h3>
 
+                <br></br>
+
                 {this.state.cards.map(match => (
-                    <Card
+                    <FriendCard
                         isClicked={this.isClicked}
                         id={match.id}
                         key={match.id}
                         image={match.image}
                     />
                 ))}
-            </Wrapper> */
+            </Wrapper>
         );
     }
 }
